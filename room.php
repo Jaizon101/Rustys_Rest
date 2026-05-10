@@ -222,6 +222,28 @@ $isGuest = $user && !$isHost;
         Hosted by <strong><?= htmlspecialchars($room['host_name']) ?></strong>
       </p>
 
+      <!-- ── Map of the room's location ────────────────────────── -->
+      <?php
+        $mapQuery = trim(
+          ($room['address'] ? $room['address'] . ', ' : '') .
+          $room['city'] .
+          ($room['province'] ? ', ' . $room['province'] : '')
+        );
+      ?>
+      <h3 style="font-size:1.1rem;margin:1.75rem 0 .75rem">📍 Location on Map</h3>
+      <div style="border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:1rem">
+        <iframe
+          src="https://maps.google.com/maps?q=<?= urlencode($mapQuery) ?>&output=embed&z=14"
+          width="100%" height="320" style="border:0;display:block"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          title="Map of <?= htmlspecialchars($room['city']) ?>"></iframe>
+      </div>
+      <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($mapQuery) ?>"
+         target="_blank" rel="noopener"
+         style="font-size:.85rem;color:var(--brown-dark);font-weight:600">
+        Open in Google Maps ↗
+      </a>
+
       <!-- Reviews -->
       <?php if ($reviews): ?>
       <div class="reviews-section" style="margin-top:2rem">
