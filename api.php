@@ -230,6 +230,36 @@ switch ($action) {
         }
         break;
 
+    case 'update_listing':
+        $listingId = cleanInt($_POST['id'] ?? 0);
+        $title     = clean($_POST['title']       ?? '');
+        $type      = clean($_POST['type']        ?? '');
+        $desc      = clean($_POST['description'] ?? '');
+        $address   = clean($_POST['address']     ?? '');
+        $city      = clean($_POST['city']        ?? '');
+        $province  = clean($_POST['province']    ?? '');
+        $bedrooms  = cleanInt($_POST['bedrooms']   ?? 1);
+        $bathrooms = cleanInt($_POST['bathrooms']  ?? 1);
+        $maxGuests = cleanInt($_POST['max_guests'] ?? 1);
+        $price     = cleanFloat($_POST['price']    ?? 0);
+        $cleaning  = cleanFloat($_POST['cleaning'] ?? 0);
+        $deposit   = cleanFloat($_POST['deposit']  ?? 0);
+        $available = cleanInt($_POST['available']  ?? 1);
+        $amenities = $_POST['amenities'] ?? [];
+        if (!$listingId || !$title || !$city || $price <= 0) jsonResponse(false, 'Title, city, and price are required.');
+        try {
+            $stmt = $db->prepare("UPDATE listings SET title=?, type=?, description=?, address=?, city=?, province=?, bedrooms=?, bathrooms=?, max_guests=?, price_per_night=?, cleaning_fee=?, security_deposit=?, amenities=?, available=? WHERE id=? AND host_id=?");
+            $stmt->execute([$title, $type, $desc, $address, $city, $province, $bedrooms, $bathrooms, $maxGuests, $price, $cleaning, $deposit, json_encode(array_values($amenities)), $available, $listingId, $user['id']]);
+            if ($stmt->rowCount()) {
+                jsonResponse(true, 'Listing updated successfully.');
+            } else {
+                jsonResponse(false, 'No changes made or listing not found.');
+            }
+        } catch (PDOException $e) {
+            jsonResponse(false, 'Failed to update listing: ' . $e->getMessage(), [], 500);
+        }
+        break;
+
     case 'create_listing':
         $title     = clean($_POST['title']       ?? '');
         $type      = clean($_POST['type']        ?? '');
