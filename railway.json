@@ -1,11 +1,8 @@
 {
-  "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
+    "startCommand": "a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork; apache2ctl -D FOREGROUND"
   }
 }
