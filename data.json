@@ -1,0 +1,206 @@
+{
+  "listings": [
+    {
+      "id": 1,
+      "title": "Beachfront Villa in Panglao",
+      "location": "Panglao, Bohol",
+      "type": "Villa",
+      "price_per_night": 4500,
+      "cleaning_fee": 500,
+      "security_deposit": 2000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "max_guests": 6,
+      "rating": 4.9,
+      "reviews": 87,
+      "emoji": "🏖️",
+      "description": "Wake up to stunning ocean views in this gorgeous beachfront villa. Features a private pool, direct beach access, and a fully equipped kitchen.",
+      "amenities": ["WiFi", "Pool", "Parking", "Air Con", "Kitchen", "Beach Access"],
+      "available": true,
+      "host_id": 2,
+      "created_at": "2025-01-15"
+    },
+    {
+      "id": 2,
+      "title": "Mountain Cabin in Bukidnon",
+      "location": "Malaybalay, Bukidnon",
+      "type": "Cabin",
+      "price_per_night": 2200,
+      "cleaning_fee": 300,
+      "security_deposit": 1000,
+      "bedrooms": 2,
+      "bathrooms": 1,
+      "max_guests": 4,
+      "rating": 4.8,
+      "reviews": 54,
+      "emoji": "🏔️",
+      "description": "Escape to the cool highlands in this charming wooden cabin surrounded by pine trees. Perfect for nature lovers and families.",
+      "amenities": ["WiFi", "Parking", "Kitchen", "TV"],
+      "available": true,
+      "host_id": 3,
+      "created_at": "2025-02-20"
+    },
+    {
+      "id": 3,
+      "title": "Modern City Loft in CDO",
+      "location": "Cagayan de Oro, Misamis Oriental",
+      "type": "Apartment",
+      "price_per_night": 1800,
+      "cleaning_fee": 250,
+      "security_deposit": 500,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "max_guests": 2,
+      "rating": 4.7,
+      "reviews": 132,
+      "emoji": "🏙️",
+      "description": "Stylish loft in the heart of Cagayan de Oro with walking distance to restaurants, malls, and business districts. Great for solo travelers or couples.",
+      "amenities": ["WiFi", "Air Con", "TV", "Kitchen"],
+      "available": true,
+      "host_id": 2,
+      "created_at": "2025-03-10"
+    },
+    {
+      "id": 4,
+      "title": "Countryside Farm House",
+      "location": "Opol, Misamis Oriental",
+      "type": "House",
+      "price_per_night": 2800,
+      "cleaning_fee": 400,
+      "security_deposit": 1500,
+      "bedrooms": 4,
+      "bathrooms": 2,
+      "max_guests": 8,
+      "rating": 4.6,
+      "reviews": 41,
+      "emoji": "🌿",
+      "description": "A peaceful farmhouse retreat with lush gardens, vegetable patches, and fresh country air. Ideal for large families and group getaways.",
+      "amenities": ["Parking", "Kitchen", "WiFi", "Air Con"],
+      "available": true,
+      "host_id": 4,
+      "created_at": "2025-04-05"
+    },
+    {
+      "id": 5,
+      "title": "Luxury Hilltop Villa",
+      "location": "Initao, Misamis Oriental",
+      "type": "Villa",
+      "price_per_night": 7500,
+      "cleaning_fee": 800,
+      "security_deposit": 3000,
+      "bedrooms": 5,
+      "bathrooms": 4,
+      "max_guests": 10,
+      "rating": 5.0,
+      "reviews": 29,
+      "emoji": "🏡",
+      "description": "Perched on a hilltop with panoramic sea views, this luxury villa features a private infinity pool, butler service, and premium amenities throughout.",
+      "amenities": ["WiFi", "Pool", "Parking", "Air Con", "Kitchen", "TV", "Gym"],
+      "available": true,
+      "host_id": 5,
+      "created_at": "2025-05-01"
+    },
+    {
+      "id": 6,
+      "title": "Glamping Tent at Camiguin",
+      "location": "Mambajao, Camiguin",
+      "type": "Camping",
+      "price_per_night": 1200,
+      "cleaning_fee": 150,
+      "security_deposit": 500,
+      "bedrooms": 1,
+      "bathrooms": 1,
+      "max_guests": 2,
+      "rating": 4.8,
+      "reviews": 68,
+      "emoji": "⛺",
+      "description": "Experience glamping at its finest on the island of Camiguin. Enjoy volcano views, natural hot springs nearby, and a truly unique stay under the stars.",
+      "amenities": ["WiFi", "Parking", "Beach Access"],
+      "available": false,
+      "host_id": 3,
+      "created_at": "2025-06-12"
+    }
+  ],
+
+  "bookings": [
+    {
+      "id": 1,
+      "listing_id": 1,
+      "user_id": 1,
+      "check_in": "2026-05-10",
+      "check_out": "2026-05-15",
+      "guests": 4,
+      "total_price": 23000,
+      "status": "confirmed",
+      "payment_method": "GCash",
+      "created_at": "2026-04-20"
+    },
+    {
+      "id": 2,
+      "listing_id": 3,
+      "user_id": 1,
+      "check_in": "2026-06-01",
+      "check_out": "2026-06-03",
+      "guests": 2,
+      "total_price": 4100,
+      "status": "pending",
+      "payment_method": "Card",
+      "created_at": "2026-04-28"
+    },
+    {
+      "id": 3,
+      "listing_id": 2,
+      "user_id": 1,
+      "check_in": "2026-07-20",
+      "check_out": "2026-07-25",
+      "guests": 3,
+      "total_price": 11300,
+      "status": "confirmed",
+      "payment_method": "GCash",
+      "created_at": "2026-05-01"
+    }
+  ],
+
+  "users": [
+    {
+      "id": 1,
+      "first_name": "Juan",
+      "last_name": "dela Cruz",
+      "email": "juan@example.com",
+      "role": "both",
+      "rating": 4.9,
+      "joined": "2024-11-01"
+    },
+    {
+      "id": 2,
+      "first_name": "Maria",
+      "last_name": "Santos",
+      "email": "maria@example.com",
+      "role": "host",
+      "rating": 4.8,
+      "joined": "2024-09-15"
+    }
+  ],
+
+  "amenities": [
+    { "id": 1, "name": "WiFi",         "icon": "📶" },
+    { "id": 2, "name": "Pool",         "icon": "🏊" },
+    { "id": 3, "name": "Parking",      "icon": "🚗" },
+    { "id": 4, "name": "Air Con",      "icon": "❄️" },
+    { "id": 5, "name": "Kitchen",      "icon": "🍳" },
+    { "id": 6, "name": "TV",           "icon": "📺" },
+    { "id": 7, "name": "Beach Access", "icon": "🌊" },
+    { "id": 8, "name": "Gym",          "icon": "🏋️" }
+  ],
+
+  "property_types": ["House", "Apartment", "Villa", "Cabin", "Condo", "Camping"],
+
+  "categories": [
+    { "label": "Beach",       "emoji": "🏖️" },
+    { "label": "Mountain",    "emoji": "🏔️" },
+    { "label": "City",        "emoji": "🏙️" },
+    { "label": "Countryside", "emoji": "🌿" },
+    { "label": "Villa",       "emoji": "🏡" },
+    { "label": "Camping",     "emoji": "⛺" }
+  ]
+}
