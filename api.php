@@ -24,32 +24,40 @@ if ($action === 'listings') {
         };
         $type     = $_GET['type']     ?? '';
         $location = $_GET['location'] ?? $_GET['city'] ?? '';
-         $minPrice = (float)($_GET['min_price'] ?? 0);
-        $maxPrice = (float)($_GET['max_price'] ?? 0);
-        $guests   = (int)($_GET['guests'] ?? 0);
-        $checkIn  = $_GET['check_in']  ?? '';
-        $checkOut = $_GET['check_out'] ?? '';
-        $where  = ['l.available = 1'];
-        $params = [];
-        if ($type)     { $where[] = 'l.type = ?'; $params[] = $type; }
-        if ($location) { $where[] = '(l.city LIKE ? OR l.title LIKE ? OR l.province LIKE ?)'; $params[] = "%$location%"; $params[] = "%$location%"; $params[] = "%$location%"; }
+        $minPrice    = (float)($_GET['min_price'] ?? 0);
+        $maxPrice    = (float)($_GET['max_price'] ?? 0);
+        $guests      = (int)($_GET['guests'] ?? 0);
+        $checkIn     = $_GET['check_in']  ?? '';
+        $checkOut    = $_GET['check_out'] ?? '';
+        $availFilter = $_GET['available'] ?? '';
+
+        // Date-availability expression: 1 if no booking conflicts for chosen dates, else 0
+        $datesAvailSelect = '1 AS dates_available';
+        $datesParams = [];
+        if ($checkIn && $checkOut && strtotime($checkIn) && strtotime($checkOut) && $checkOut > $checkIn) {
+            $datesAvailSelect = "(CASE WHEN EXISTS (
+                SELECT 1 FROM bookings b
+                WHERE b.listing_id = l.id
+                  AND b.booking_status IN ('pending','approved')
+                  AND b.check_in < ? AND b.check_out > ?
+            ) THEN 0 ELSE 1 END) AS dates_available";
+            $datesParams = [$checkOut, $checkIn];
+        }
+
+        $where  = ['1=1'];
+        $params = $datesParams; // bound first because they appear in SELECT
+        if ($type)         { $where[] = 'l.type = ?'; $params[] = $type; }
+        if ($location)     { $where[] = '(l.city LIKE ? OR l.title LIKE ? OR l.province LIKE ?)'; $params[] = "%$location%"; $params[] = "%$location%"; $params[] = "%$location%"; }
         if ($minPrice > 0) { $where[] = 'l.price_per_night >= ?'; $params[] = $minPrice; }
         if ($maxPrice > 0) { $where[] = 'l.price_per_night <= ?'; $params[] = $maxPrice; }
         if ($guests > 0)   { $where[] = 'l.max_guests >= ?';      $params[] = $guests; }
-        if ($checkIn && $checkOut && strtotime($checkIn) && strtotime($checkOut) && $checkOut > $checkIn) {
-            $where[] = "l.id NOT IN (
-                SELECT listing_id FROM bookings
-                WHERE booking_status IN ('pending','approved')
-                  AND check_in < ? AND check_out > ?
-            )";
-            $params[] = $checkOut;
-            $params[] = $checkIn;
-        }
+
         $sql = "SELECT l.id, l.title, l.type, l.city, l.province,
                    l.price_per_night, l.cleaning_fee, l.bedrooms,
                    l.bathrooms, l.max_guests, l.rating, l.review_count,
                    l.cover_photo, l.cover_photo AS cover_photo_path,
                    l.amenities, l.available,
+                   $datesAvailSelect,
                    CONCAT(u.first_name,' ',u.last_name) AS host_name
             FROM listings l
             JOIN users u ON u.id = l.host_id
@@ -58,10 +66,21 @@ if ($action === 'listings') {
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         $rows = $stmt->fetchAll();
-        // Decode amenities JSON into array for JS
+
+        // Compute effective availability (host-enabled AND dates free) and decode amenities
         foreach ($rows as &$row) {
-            $row['amenities'] = json_decode($row['amenities'] ?? '[]', true) ?: [];
+            $row['amenities']           = json_decode($row['amenities'] ?? '[]', true) ?: [];
+            $row['effective_available'] = ((int)$row['available'] === 1 && (int)$row['dates_available'] === 1) ? 1 : 0;
         }
+        unset($row);
+
+        // Apply the Available / Not Available radio filter in PHP
+        if ($availFilter === '1') {
+            $rows = array_values(array_filter($rows, fn($r) => $r['effective_available'] === 1));
+        } elseif ($availFilter === '0') {
+            $rows = array_values(array_filter($rows, fn($r) => $r['effective_available'] === 0));
+        }
+
         jsonResponse(true, 'ok', $rows);
     } catch (PDOException $e) {
         jsonResponse(false, 'Failed to load listings. Please try again.', [], 500);
@@ -118,7 +137,7 @@ switch ($action) {
             $stmt->execute([$user['id']]);
             jsonResponse(true, 'ok', $stmt->fetchAll());
         } catch (PDOException $e) {
-            jsonResponse(false, 'Failed to load bookings: ' . $e->getMessage(), [], 500);
+            jsonResponse(false, 'Failed to load bookings.', [], 500);
         }
         break;
 
@@ -145,7 +164,7 @@ switch ($action) {
             $stmt->execute([$user['id']]);
             jsonResponse(true, 'ok', $stmt->fetchAll());
         } catch (PDOException $e) {
-            jsonResponse(false, 'Failed to load bookings: ' . $e->getMessage(), [], 500);
+            jsonResponse(false, 'Failed to load bookings.', [], 500);
         }
         break;
 
