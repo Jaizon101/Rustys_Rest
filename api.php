@@ -24,9 +24,11 @@ if ($action === 'listings') {
         };
         $type     = $_GET['type']     ?? '';
         $location = $_GET['location'] ?? $_GET['city'] ?? '';
-        $minPrice = (float)($_GET['min_price'] ?? 0);
+         $minPrice = (float)($_GET['min_price'] ?? 0);
         $maxPrice = (float)($_GET['max_price'] ?? 0);
         $guests   = (int)($_GET['guests'] ?? 0);
+        $checkIn  = $_GET['check_in']  ?? '';
+        $checkOut = $_GET['check_out'] ?? '';
         $where  = ['l.available = 1'];
         $params = [];
         if ($type)     { $where[] = 'l.type = ?'; $params[] = $type; }
@@ -34,6 +36,15 @@ if ($action === 'listings') {
         if ($minPrice > 0) { $where[] = 'l.price_per_night >= ?'; $params[] = $minPrice; }
         if ($maxPrice > 0) { $where[] = 'l.price_per_night <= ?'; $params[] = $maxPrice; }
         if ($guests > 0)   { $where[] = 'l.max_guests >= ?';      $params[] = $guests; }
+        if ($checkIn && $checkOut && strtotime($checkIn) && strtotime($checkOut) && $checkOut > $checkIn) {
+            $where[] = "l.id NOT IN (
+                SELECT listing_id FROM bookings
+                WHERE booking_status IN ('pending','approved')
+                  AND check_in < ? AND check_out > ?
+            )";
+            $params[] = $checkOut;
+            $params[] = $checkIn;
+        }
         $sql = "SELECT l.id, l.title, l.type, l.city, l.province,
                    l.price_per_night, l.cleaning_fee, l.bedrooms,
                    l.bathrooms, l.max_guests, l.rating, l.review_count,
