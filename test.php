@@ -1,6 +1,16 @@
 <?php
-echo "MYSQLHOST: " . getenv('MYSQLHOST') . "<br>";
-echo "MYSQLPORT: " . getenv('MYSQLPORT') . "<br>";
-echo "MYSQLDATABASE: " . getenv('MYSQLDATABASE') . "<br>";
-echo "MYSQLUSER: " . getenv('MYSQLUSER') . "<br>";
-echo "MYSQLPASSWORD: " . (getenv('MYSQLPASSWORD') ? 'SET' : 'NOT SET') . "<br>";
+$host = getenv('MYSQLHOST');
+$port = getenv('MYSQLPORT');
+$db   = getenv('MYSQLDATABASE');
+$user = getenv('MYSQLUSER');
+$pass = getenv('MYSQLPASSWORD');
+
+try {
+    $pdo = new PDO(
+        "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4",
+        $user, $pass
+    );
+    echo "Connected successfully!";
+} catch (PDOException $e) {
+    echo "Failed: " . $e->getMessage();
+}
