@@ -151,19 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         New here? <a href="register.php">Create a free account</a>
       </div>
 
-      <!-- Demo credentials hint -->
-      <div style="margin-top:1.5rem;background:var(--beige);border-radius:8px;padding:.85rem 1rem;font-size:.82rem;color:var(--brown)">
-        <strong>Demo accounts</strong><br>
-        Admin: admin@rustysrest.com<br>
-        Host:&nbsp; maria@example.com<br>
-        Guest: pedro@example.com<br>
-        Password for all: <code>password123</code>
-      </div>
-    </div>
-  </div>
-
-</div>
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
 $(function () {
