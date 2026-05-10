@@ -61,7 +61,10 @@ $(function () {
     }
 
     $.each(listings, function (_, l) {
-      var isAvail = parseInt(l.available) === 1;
+      var effective = (typeof l.effective_available !== 'undefined')
+        ? parseInt(l.effective_available)
+        : parseInt(l.available);
+      var isAvail = effective === 1;
 
       // Photo: use cover path if stored, otherwise emoji placeholder
       var imgHtml = (l.cover_photo_path && l.cover_photo_path !== '')
