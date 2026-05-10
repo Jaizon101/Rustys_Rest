@@ -293,7 +293,11 @@ function renderListings(listings, $container) {
   }
 
   listings.forEach(function (l) {
-    var isAvail = parseInt(l.available) === 1;
+    // effective_available: 1 only if host enabled AND no booking conflicts on chosen dates
+    var effective = (typeof l.effective_available !== 'undefined')
+      ? parseInt(l.effective_available)
+      : parseInt(l.available);
+    var isAvail = effective === 1;
     var badge   = isAvail
       ? '<span class="avail-badge avail-yes">✔ Available</span>'
       : '<span class="avail-badge avail-no">✘ Not Available</span>';
