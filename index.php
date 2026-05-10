@@ -78,6 +78,23 @@ $categories = $jsonData['categories'] ?? [];
   </div>
 </section>
 
+<!-- ── EXPLORE BY MAP ────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Explore destinations</h2>
+    <p style="text-align:center;color:var(--text-muted);max-width:600px;margin:0 auto 1.5rem">
+      Browse rooms across the Philippines — beachfront stays, mountain cottages, city-center rooms and more.
+    </p>
+    <div style="border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);max-width:1100px;margin:0 auto;box-shadow:var(--shadow)">
+      <iframe
+        src="https://maps.google.com/maps?q=Philippines&output=embed&z=6"
+        width="100%" height="420" style="border:0;display:block"
+        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Rusty's Rest destinations"></iframe>
+    </div>
+  </div>
+</section>
+
 <!-- ── HOW IT WORKS ──────────────────────────────────────────── -->
 <section class="section">
   <div class="container">
