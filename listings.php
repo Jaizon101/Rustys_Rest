@@ -271,13 +271,12 @@ function loadListings() {
 
   $('#listingsGrid').html('<div class="loading-spinner">Loading rooms…</div>');
 
-  $.getJSON('api.php', params, function (res) {
+ $.getJSON('api.php', params, function (res) {
     if (!res.success) { toast(res.message,'error'); return; }
     var listings = res.data;
+    console.log('Listings received:', listings.length, listings);
     $('#listingCount').text(listings.length);
     renderListings(listings, $('#listingsGrid'), loggedIn);
-  }).fail(function () { toast('Could not load rooms.','error'); });
-}
 
 // ── Render room cards (clicking opens room.php) ──────────────────
 function renderListings(listings, $container) {
