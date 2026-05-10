@@ -99,7 +99,7 @@ switch ($action) {
             $stmt->execute([$user['id']]);
             jsonResponse(true, 'ok', $stmt->fetchAll());
         } catch (PDOException $e) {
-            jsonResponse(false, 'Failed to load bookings.', [], 500);
+            jsonResponse(false, 'Failed to load bookings: ' . $e->getMessage(), [], 500);
         }
         break;
 
@@ -126,7 +126,7 @@ switch ($action) {
             $stmt->execute([$user['id']]);
             jsonResponse(true, 'ok', $stmt->fetchAll());
         } catch (PDOException $e) {
-            jsonResponse(false, 'Failed to load bookings.', [], 500);
+            jsonResponse(false, 'Failed to load bookings: ' . $e->getMessage(), [], 500);
         }
         break;
 
