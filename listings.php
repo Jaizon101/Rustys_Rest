@@ -271,12 +271,13 @@ function loadListings() {
 
   $('#listingsGrid').html('<div class="loading-spinner">Loading rooms…</div>');
 
- $.getJSON('api.php', params, function (res) {
-    if (!res.success) { toast(res.message,'error'); return; }
+  $.getJSON('api.php', params, function (res) {
+    if (!res.success) { toast(res.message, 'error'); return; }
     var listings = res.data;
-    console.log('Listings received:', listings.length, listings);
     $('#listingCount').text(listings.length);
-    renderListings(listings, $('#listingsGrid'), loggedIn);
+    renderListings(listings, $('#listingsGrid'));
+  });
+}
 
 // ── Render room cards (clicking opens room.php) ──────────────────
 function renderListings(listings, $container) {
@@ -302,17 +303,16 @@ function renderListings(listings, $container) {
       : '<div class="card-emoji-placeholder">🏠</div>';
 
     var amenTags = '';
-    (l.amenities || []).slice(0,3).forEach(function(a){
+    (l.amenities || []).slice(0, 3).forEach(function (a) {
       amenTags += '<span class="listing-tag">' + $('<div>').text(a).html() + '</span>';
     });
 
-    // Card click → room detail page with calendar
     var card = $(
       '<div class="listing-card" style="cursor:pointer">' +
         '<div class="listing-img-wrap">' + imgHtml + badge + '</div>' +
         '<div class="listing-body">' +
           '<div class="listing-location">📍 ' +
-            $('<div>').text(l.city + (l.province?', '+l.province:'')).html() +
+            $('<div>').text(l.city + (l.province ? ', ' + l.province : '')).html() +
           '</div>' +
           '<div class="listing-title">' + $('<div>').text(l.title).html() + '</div>' +
           '<div class="listing-meta">' +
@@ -332,7 +332,6 @@ function renderListings(listings, $container) {
       '</div>'
     );
 
-    // Navigate to room detail page, carry dates in URL
     card.on('click', function () {
       window.location.href = 'room.php?id=' + l.id +
         '&check_in=' + encodeURIComponent(gCheckIn) +
@@ -345,17 +344,32 @@ function renderListings(listings, $container) {
 
 // ── Filter controls ──────────────────────────────────────────────
 $('#applyFilters').on('click', loadListings);
-$('#f-location').on('keypress', function(e){ if(e.which===13) loadListings(); });
+$('#f-location').on('keypress', function (e) { if (e.which === 13) loadListings(); });
 $('input[name="f-avail"]').on('change', loadListings);
 $('#f-sort').on('change', loadListings);
 
 $('#resetFilters').on('click', function () {
   $('#f-location,#f-min,#f-max,#f-guests').val('');
-  $('#f-type,#f-sort').val('');
+  $('#f-type').val('');
   $('#f-sort').val('price_asc');
-  $('input[name="f-avail"][value=""]').prop('checked',true);
+  $('input[name="f-avail"][value=""]').prop('checked', true);
   loadListings();
 });
+
+// ── Pre-populate date gate from homepage search URL params ────────
+(function () {
+  var urlParams = new URLSearchParams(window.location.search);
+  var ci = urlParams.get('check_in');
+  var co = urlParams.get('check_out');
+  var loc = urlParams.get('location');
+  if (loc) $('#f-location').val(loc);
+  if (ci && co && ci >= TODAY && co > ci) {
+    $('#gate-checkin').val(ci);
+    $('#gate-checkout').val(co);
+    // Simulate Continue button click to auto-proceed
+    $('#gateContinue').trigger('click');
+  }
+}());
 </script>
 </body>
 </html>
