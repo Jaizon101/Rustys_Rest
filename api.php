@@ -51,7 +51,7 @@ if ($action === 'listings') {
         }
         jsonResponse(true, 'ok', $rows);
     } catch (PDOException $e) {
-        jsonResponse(false, 'Failed to load listings: ' . $e->getMessage(), [], 500);
+        jsonResponse(false, 'Failed to load listings. Please try again.', [], 500);
     }
 }
 
@@ -160,9 +160,9 @@ switch ($action) {
             if ($conflict->fetch()) jsonResponse(false, 'Those dates are already booked.');
             $total = ($listing['price_per_night'] * $nights) + $listing['cleaning_fee'];
             $insert = $db->prepare("INSERT INTO bookings
-                (listing_id, user_id, check_in, check_out, guests, total_price, payment_method, special_requests, booking_status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
-            $insert->execute([$listingId, $user['id'], $checkIn, $checkOut, $guests, $total, $paymentMethod, $specialRequests]);
+                (listing_id, user_id, check_in, check_out, guests, nights, price_per_night, cleaning_fee, total_price, payment_method, special_requests, booking_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
+            $insert->execute([$listingId, $user['id'], $checkIn, $checkOut, $guests, $nights, $listing['price_per_night'], $listing['cleaning_fee'], $total, $paymentMethod, $specialRequests]);
             jsonResponse(true, 'Booking request sent!', ['booking_id' => $db->lastInsertId(), 'total' => $total, 'nights' => $nights]);
         } catch (PDOException $e) {
             jsonResponse(false, 'Booking failed. Please try again.', [], 500);
@@ -262,7 +262,7 @@ switch ($action) {
                 jsonResponse(false, 'No changes made or listing not found.');
             }
         } catch (PDOException $e) {
-            jsonResponse(false, 'Failed to update listing: ' . $e->getMessage(), [], 500);
+            jsonResponse(false, 'Failed to update listing. Please try again.', [], 500);
         }
         break;
 
