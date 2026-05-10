@@ -1,2 +1,11 @@
 # [start]
 cmd = "a2dismod mpm_event mpm_worker 2>/dev/null; a2enmod mpm_prefork; apache2ctl -D FOREGROUND"
+
+[phases.setup]
+nixPkgs = ["php82", "php82Packages.composer", "apacheHttpd"]
+
+[phases.build]
+cmds = []
+
+[start]
+cmd = "php -S 0.0.0.0:$PORT"
