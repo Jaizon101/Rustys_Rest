@@ -6,7 +6,7 @@ requireLogin('dashboard.php');
 $user      = currentUser();
 $isHost    = in_array($user['role'], ['host','both','admin']);
 $activeTab = isset($_GET['tab']) ? clean($_GET['tab']) : 'bookings';
-if ($activeTab === 'listings' && !$isHost) $activeTab = 'bookings';
+if (($activeTab === 'listings' || $activeTab === 'hostbookings') && !$isHost) $activeTab = 'bookings';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -83,7 +83,8 @@ if ($activeTab === 'listings' && !$isHost) $activeTab = 'bookings';
     <nav class="dash-nav">
       <a href="?tab=bookings" class="dash-link <?= $activeTab==='bookings'?'active':'' ?>">📅 My Bookings</a>
       <?php if ($isHost): ?>
-      <a href="?tab=listings" class="dash-link <?= $activeTab==='listings'?'active':'' ?>">🏠 My Listings</a>
+      <a href="?tab=listings"     class="dash-link <?= $activeTab==='listings'?'active':'' ?>">🏠 My Listings</a>
+      <a href="?tab=hostbookings" class="dash-link <?= $activeTab==='hostbookings'?'active':'' ?>">📋 Booking Requests</a>
       <?php endif; ?>
       <a href="?tab=profile"  class="dash-link <?= $activeTab==='profile'?'active':'' ?>">👤 Profile</a>
       <a href="logout.php"    class="dash-link danger">🚪 Log Out</a>
@@ -117,6 +118,14 @@ if ($activeTab === 'listings' && !$isHost) $activeTab = 'bookings';
         <a href="host.php" class="btn-primary">+ Add New Room</a>
       </div>
       <div id="myListingsContainer"><div class="loading-spinner">Loading your listings…</div></div>
+    </div>
+    <?php endif; ?>
+
+    <!-- ══ TAB: BOOKING REQUESTS (host only) ════════════════════ -->
+    <?php if ($isHost): ?>
+    <div class="tab-panel <?= $activeTab!=='hostbookings'?'hidden':'' ?>" id="tab-hostbookings">
+      <h2 class="dash-title">Booking Requests</h2>
+      <div id="hostBookingsList"><div class="loading-spinner">Loading booking requests…</div></div>
     </div>
     <?php endif; ?>
 
@@ -435,10 +444,89 @@ $(document).on('click', '.js-confirm-delete', function (e) {
   });
 });
 
+// ── Load Host Booking Requests ──────────────────────────────────
+function loadHostBookings() {
+  if (!isHost) return;
+  api({ data: { action: 'host_bookings' } }, function (bookings) {
+    var $list = $('#hostBookingsList').empty();
+
+    if (!bookings.length) {
+      $list.html('<div class="empty-dash"><div>📋</div><p>No booking requests yet.</p></div>');
+      return;
+    }
+
+    var $wrap  = $('<div class="bookings-table-wrapper">');
+    var $table = $('<table class="bookings-table">').html(
+      '<thead><tr>' +
+        '<th>Room</th><th>Guest</th><th>Dates</th>' +
+        '<th>Guests</th><th>Total</th><th>Status</th><th>Actions</th>' +
+      '</tr></thead>'
+    );
+    var $tbody = $('<tbody>');
+
+    bookings.forEach(function (b) {
+      var ci     = new Date(b.check_in  + 'T00:00:00').toLocaleDateString('en-PH', {month:'short',day:'numeric',year:'numeric'});
+      var co     = new Date(b.check_out + 'T00:00:00').toLocaleDateString('en-PH', {month:'short',day:'numeric',year:'numeric'});
+      var status = b.booking_status || 'pending';
+
+      var actionBtns = '';
+      if (status === 'pending') {
+        actionBtns =
+          '<div class="action-btn-group">' +
+            '<button class="btn-primary btn-sm js-update-booking-status"' +
+              ' data-id="' + b.id + '" data-status="approved"' +
+              ' style="padding:.3rem .75rem;font-size:.8rem">✔ Approve</button>' +
+            '<button class="btn-danger btn-sm js-update-booking-status"' +
+              ' data-id="' + b.id + '" data-status="rejected"' +
+              ' style="padding:.3rem .75rem;font-size:.8rem">✘ Reject</button>' +
+          '</div>';
+      } else {
+        actionBtns = statusBadge(status);
+      }
+
+      var $row = $('<tr data-id="' + b.id + '">').html(
+        '<td><strong>' + $('<div>').text(b.title || '').html() + '</strong>' +
+          '<div style="font-size:.78rem;color:var(--text-muted)">' + $('<div>').text(b.city || '').html() + '</div></td>' +
+        '<td>' + $('<div>').text(b.guest_name || '').html() +
+          '<div style="font-size:.78rem;color:var(--text-muted)">' + $('<div>').text(b.guest_email || '').html() + '</div></td>' +
+        '<td>' + ci + ' → ' + co + '</td>' +
+        '<td>' + b.guests + '</td>' +
+        '<td>₱' + Number(b.total_price).toLocaleString() + '</td>' +
+        '<td id="status-cell-' + b.id + '">' + statusBadge(status) + '</td>' +
+        '<td id="action-cell-' + b.id + '">' + actionBtns + '</td>'
+      );
+      $tbody.append($row);
+    });
+
+    $table.append($tbody);
+    $wrap.append($table);
+    $list.append($wrap);
+  });
+}
+
+// ── Approve / Reject booking (host) ────────────────────────────
+$(document).on('click', '.js-update-booking-status', function () {
+  var $btn   = $(this).prop('disabled', true);
+  var id     = $btn.data('id');
+  var status = $btn.data('status');
+  var label  = status === 'approved' ? 'approve' : 'reject';
+  if (!confirm('Are you sure you want to ' + label + ' this booking?')) {
+    $btn.prop('disabled', false); return;
+  }
+  api({
+    method: 'POST',
+    data: { action: 'update_booking_status', booking_id: id, status: status, csrf_token: CSRF }
+  }, function (_, msg) {
+    toast(msg, 'success');
+    $('#status-cell-' + id).html(statusBadge(status));
+    $('#action-cell-' + id).html(statusBadge(status));
+  }, function () { $btn.prop('disabled', false); });
+});
+
 // ── Init ────────────────────────────────────────────────────────
 $(function () {
   loadBookings();
-  if (isHost) loadMyListings();
+  if (isHost) { loadMyListings(); loadHostBookings(); }
 });
 </script>
 </body>
