@@ -275,7 +275,7 @@ function loadListings() {
     if (!res.success) { toast(res.message,'error'); return; }
     var listings = res.data;
     $('#listingCount').text(listings.length);
-    renderListings(listings, $('#listingsGrid'));
+    renderListings(listings, $('#listingsGrid'), loggedIn);
   }).fail(function () { toast('Could not load rooms.','error'); });
 }
 
