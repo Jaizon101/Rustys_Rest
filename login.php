@@ -151,10 +151,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         New here? <a href="register.php">Create a free account</a>
       </div>
 
+    </div><!-- /.auth-form-inner -->
+  </div><!-- /.auth-form-panel -->
+</div><!-- /.auth-split -->
+
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
 $(function () {
-  // Client-side: disable submit while processing to prevent double-submit
   $('form').on('submit', function () {
     $(this).find('[type=submit]').prop('disabled', true).text('Logging in…');
   });
