@@ -25,13 +25,15 @@ if ($action === 'listings') {
         $type     = $_GET['type']     ?? '';
         $location = $_GET['location'] ?? $_GET['city'] ?? '';
         $minPrice = (float)($_GET['min_price'] ?? 0);
-        $maxPrice = (float)($_GET['max_price'] ?? 999999);
+        $maxPrice = (float)($_GET['max_price'] ?? 0);
+        $guests   = (int)($_GET['guests'] ?? 0);
         $where  = ['l.available = 1'];
         $params = [];
         if ($type)     { $where[] = 'l.type = ?'; $params[] = $type; }
-        if ($location) { $where[] = '(l.city LIKE ? OR l.title LIKE ?)'; $params[] = "%$location%"; $params[] = "%$location%"; }
+        if ($location) { $where[] = '(l.city LIKE ? OR l.title LIKE ? OR l.province LIKE ?)'; $params[] = "%$location%"; $params[] = "%$location%"; $params[] = "%$location%"; }
         if ($minPrice > 0) { $where[] = 'l.price_per_night >= ?'; $params[] = $minPrice; }
-        if ($maxPrice < 999999) { $where[] = 'l.price_per_night <= ?'; $params[] = $maxPrice; }
+        if ($maxPrice > 0) { $where[] = 'l.price_per_night <= ?'; $params[] = $maxPrice; }
+        if ($guests > 0)   { $where[] = 'l.max_guests >= ?';      $params[] = $guests; }
         $sql = "SELECT l.id, l.title, l.type, l.city, l.province,
                    l.price_per_night, l.cleaning_fee, l.bedrooms,
                    l.bathrooms, l.max_guests, l.rating, l.review_count,
