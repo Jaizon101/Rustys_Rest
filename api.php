@@ -95,7 +95,7 @@ switch ($action) {
                 FROM bookings b
                 JOIN listings l ON l.id = b.listing_id
                 JOIN users u ON u.id = l.host_id
-                WHERE b.guest_id = ? ORDER BY b.created_at DESC");
+                WHERE b.user_id = ? ORDER BY b.created_at DESC");
             $stmt->execute([$user['id']]);
             jsonResponse(true, 'ok', $stmt->fetchAll());
         } catch (PDOException $e) {
@@ -121,7 +121,7 @@ switch ($action) {
                        CONCAT(u.first_name,' ',u.last_name) AS guest_name, u.email AS guest_email
                 FROM bookings b
                 JOIN listings l ON l.id = b.listing_id
-                JOIN users u ON u.id = b.guest_id
+                JOIN users u ON u.id = b.user_id
                 WHERE l.host_id = ? ORDER BY b.created_at DESC");
             $stmt->execute([$user['id']]);
             jsonResponse(true, 'ok', $stmt->fetchAll());
@@ -154,7 +154,7 @@ switch ($action) {
             if ($conflict->fetch()) jsonResponse(false, 'Those dates are already booked.');
             $total = ($listing['price_per_night'] * $nights) + $listing['cleaning_fee'];
             $insert = $db->prepare("INSERT INTO bookings
-                (listing_id, guest_id, check_in, check_out, guests, total_price, payment_method, special_requests, booking_status)
+                (listing_id, user_id, check_in, check_out, guests, total_price, payment_method, special_requests, booking_status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')");
             $insert->execute([$listingId, $user['id'], $checkIn, $checkOut, $guests, $total, $paymentMethod, $specialRequests]);
             jsonResponse(true, 'Booking request sent!', ['booking_id' => $db->lastInsertId(), 'total' => $total, 'nights' => $nights]);
@@ -167,7 +167,7 @@ switch ($action) {
         $bookingId = cleanInt($_POST['id'] ?? $_POST['booking_id'] ?? 0);
         try {
             $stmt = $db->prepare("UPDATE bookings SET booking_status = 'cancelled'
-                WHERE id = ? AND guest_id = ? AND booking_status = 'pending'");
+                WHERE id = ? AND user_id = ? AND booking_status = 'pending'");
             $stmt->execute([$bookingId, $user['id']]);
             jsonResponse($stmt->rowCount() ? true : false,
                          $stmt->rowCount() ? 'Booking cancelled.' : 'Not found or cannot be cancelled.');
@@ -181,7 +181,7 @@ switch ($action) {
         $newOut    = $_POST['new_checkout'] ?? '';
         try {
             $stmt = $db->prepare("UPDATE bookings SET check_out = ?, booking_status = 'pending'
-                WHERE id = ? AND guest_id = ? AND booking_status = 'approved'");
+                WHERE id = ? AND user_id = ? AND booking_status = 'approved'");
             $stmt->execute([$newOut, $bookingId, $user['id']]);
             jsonResponse($stmt->rowCount() ? true : false,
                          $stmt->rowCount() ? 'Stay extended successfully.' : 'Cannot extend this booking.');
@@ -268,7 +268,7 @@ switch ($action) {
         if (!$listingId || $rating < 1 || $rating > 5) jsonResponse(false, 'Invalid review data.');
         try {
             $check = $db->prepare("SELECT id FROM bookings
-                WHERE listing_id = ? AND guest_id = ? AND booking_status = 'approved' LIMIT 1");
+                WHERE listing_id = ? AND user_id = ? AND booking_status = 'approved' LIMIT 1");
             $check->execute([$listingId, $user['id']]);
             if (!$check->fetch()) jsonResponse(false, 'You can only review listings you have stayed at.');
             $stmt = $db->prepare("INSERT INTO reviews (listing_id, user_id, rating, comment)
