@@ -302,6 +302,49 @@ switch ($action) {
         }
         break;
 
+    // ── Create listing (host) ────────────────────────────────
+    case 'create_listing':
+        $title     = clean($_POST['title']       ?? '');
+        $type      = clean($_POST['type']        ?? '');
+        $desc      = clean($_POST['description'] ?? '');
+        $address   = clean($_POST['address']     ?? '');
+        $city      = clean($_POST['city']        ?? '');
+        $province  = clean($_POST['province']    ?? '');
+        $bedrooms  = cleanInt($_POST['bedrooms']   ?? 1);
+        $bathrooms = cleanInt($_POST['bathrooms']  ?? 1);
+        $maxGuests = cleanInt($_POST['max_guests'] ?? 1);
+        $price     = cleanFloat($_POST['price']    ?? 0);
+        $cleaning  = cleanFloat($_POST['cleaning'] ?? 0);
+        $deposit   = cleanFloat($_POST['deposit']  ?? 0);
+        $available = cleanInt($_POST['available']  ?? 1);
+        $amenities = $_POST['amenities'] ?? [];
+
+        if (!$title || !$city || $price <= 0) {
+            jsonResponse(false, 'Title, city, and price are required.');
+        }
+
+        try {
+            $stmt = $db->prepare("
+                INSERT INTO listings
+                    (host_id, title, type, description, address, city, province,
+                     bedrooms, bathrooms, max_guests, price_per_night,
+                     cleaning_fee, security_deposit, amenities, available)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $user['id'], $title, $type, $desc, $address, $city, $province,
+                $bedrooms, $bathrooms, $maxGuests, $price,
+                $cleaning, $deposit, json_encode(array_values($amenities)), $available
+            ]);
+
+            jsonResponse(true, 'Listing created!', [
+                'listing_id' => $db->lastInsertId()
+            ]);
+        } catch (PDOException $e) {
+            jsonResponse(false, 'Failed to create listing. Please try again.', [], 500);
+        }
+        break;
+
     default:
         jsonResponse(false, 'Unknown action.', [], 400);
 }
