@@ -29,7 +29,7 @@ $categories = $jsonData['categories'] ?? [];
     <form class="search-box" method="GET" action="listings.php">
       <div class="search-field">
         <label>Where</label>
-        <input type="text" name="location" placeholder="City or province…"/>
+        <input type="text" id="hero-where" name="location" placeholder="City or province…" autocomplete="off"/>
       </div>
       <div class="search-divider"></div>
       <div class="search-field">
@@ -48,6 +48,18 @@ $categories = $jsonData['categories'] ?? [];
       </div>
       <button type="submit" class="search-btn">Search</button>
     </form>
+
+    <!-- Live "Where" map preview — updates as user types in the location field -->
+    <div id="whereMapWrap" style="max-width:900px;margin:1.5rem auto 0;border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,.35);box-shadow:var(--shadow-lg)">
+      <div style="padding:.5rem .9rem;background:rgba(255,255,255,.92);font-size:.85rem;color:var(--brown-dark);font-weight:600">
+        📍 <span id="whereMapLabel">Philippines — type a city or province above to zoom in</span>
+      </div>
+      <iframe id="whereMap"
+        src="https://maps.google.com/maps?q=Philippines&output=embed&z=6"
+        width="100%" height="280" style="border:0;display:block"
+        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Where to stay"></iframe>
+    </div>
   </div>
 </section>
 
@@ -74,23 +86,6 @@ $categories = $jsonData['categories'] ?? [];
     </div>
     <div class="text-center" style="margin-top:2rem">
       <a href="listings.php" class="btn-primary">View All Rooms</a>
-    </div>
-  </div>
-</section>
-
-<!-- ── EXPLORE BY MAP ────────────────────────────────────────── -->
-<section class="section">
-  <div class="container">
-    <h2 class="section-title">Explore destinations</h2>
-    <p style="text-align:center;color:var(--text-muted);max-width:600px;margin:0 auto 1.5rem">
-      Browse rooms across the Philippines — beachfront stays, mountain cottages, city-center rooms and more.
-    </p>
-    <div style="border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);max-width:1100px;margin:0 auto;box-shadow:var(--shadow)">
-      <iframe
-        src="https://maps.google.com/maps?q=Philippines&output=embed&z=6"
-        width="100%" height="420" style="border:0;display:block"
-        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-        title="Rusty's Rest destinations"></iframe>
     </div>
   </div>
 </section>
@@ -129,6 +124,23 @@ $(function () {
   // Load top-rated rooms via jQuery AJAX → api.php
   api({ data: { action: 'listings', sort: 'rating' } }, function (listings) {
     renderListings(listings.slice(0, 3), $('#featuredGrid'), <?= $user ? 'true' : 'false' ?>);
+  });
+
+  // ── Live "Where" map: update iframe as user types in the location ──
+  var mapTimer = null;
+  $('#hero-where').on('input', function () {
+    var q = $(this).val().trim();
+    clearTimeout(mapTimer);
+    mapTimer = setTimeout(function () {
+      if (!q) {
+        $('#whereMap').attr('src', 'https://maps.google.com/maps?q=Philippines&output=embed&z=6');
+        $('#whereMapLabel').text('Philippines — type a city or province above to zoom in');
+      } else {
+        var query = encodeURIComponent(q + ', Philippines');
+        $('#whereMap').attr('src', 'https://maps.google.com/maps?q=' + query + '&output=embed&z=11');
+        $('#whereMapLabel').text('Showing: ' + q);
+      }
+    }, 600); // wait until typing pauses
   });
 });
 </script>
