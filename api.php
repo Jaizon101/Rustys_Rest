@@ -22,20 +22,21 @@ if ($action === 'listings') {
             'newest'     => 'l.created_at DESC',
             default      => 'l.rating DESC',
         };
-        $type     = $_GET['type'] ?? '';
-        $city     = $_GET['city'] ?? '';
+        $type     = $_GET['type']     ?? '';
+        $location = $_GET['location'] ?? $_GET['city'] ?? '';
         $minPrice = (float)($_GET['min_price'] ?? 0);
         $maxPrice = (float)($_GET['max_price'] ?? 999999);
         $where  = ['l.available = 1'];
         $params = [];
-        if ($type) { $where[] = 'l.type = ?'; $params[] = $type; }
-        if ($city) { $where[] = 'l.city LIKE ?'; $params[] = "%$city%"; }
+        if ($type)     { $where[] = 'l.type = ?'; $params[] = $type; }
+        if ($location) { $where[] = '(l.city LIKE ? OR l.title LIKE ?)'; $params[] = "%$location%"; $params[] = "%$location%"; }
         if ($minPrice > 0) { $where[] = 'l.price_per_night >= ?'; $params[] = $minPrice; }
         if ($maxPrice < 999999) { $where[] = 'l.price_per_night <= ?'; $params[] = $maxPrice; }
         $sql = "SELECT l.id, l.title, l.type, l.city, l.province,
                    l.price_per_night, l.cleaning_fee, l.bedrooms,
                    l.bathrooms, l.max_guests, l.rating, l.review_count,
-                   l.cover_photo, l.available,
+                   l.cover_photo, l.cover_photo AS cover_photo_path,
+                   l.amenities, l.available,
                    CONCAT(u.first_name,' ',u.last_name) AS host_name
             FROM listings l
             JOIN users u ON u.id = l.host_id
@@ -43,9 +44,14 @@ if ($action === 'listings') {
             ORDER BY $orderBy LIMIT 50";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
-        jsonResponse(true, 'ok', $stmt->fetchAll());
+        $rows = $stmt->fetchAll();
+        // Decode amenities JSON into array for JS
+        foreach ($rows as &$row) {
+            $row['amenities'] = json_decode($row['amenities'] ?? '[]', true) ?: [];
+        }
+        jsonResponse(true, 'ok', $rows);
     } catch (PDOException $e) {
-        jsonResponse(false, 'Failed to load listings.', [], 500);
+        jsonResponse(false, 'Failed to load listings: ' . $e->getMessage(), [], 500);
     }
 }
 
