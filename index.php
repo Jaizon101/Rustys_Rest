@@ -49,19 +49,6 @@ $categories = $jsonData['categories'] ?? [];
       <button type="submit" class="search-btn">Search</button>
     </form>
 
-    <!-- Live "Where" map preview — updates as user types in the location field -->
-    <div id="whereMapWrap" style="max-width:900px;margin:1.5rem auto 0;border-radius:var(--radius);overflow:hidden;border:1px solid rgba(255,255,255,.35);box-shadow:var(--shadow-lg)">
-      <div style="padding:.5rem .9rem;background:rgba(255,255,255,.92);font-size:.85rem;color:var(--brown-dark);font-weight:600">
-        📍 <span id="whereMapLabel">Philippines — type a city or province above to zoom in</span>
-      </div>
-      <iframe id="whereMap"
-        src="https://maps.google.com/maps?q=Philippines&output=embed&z=6"
-        width="100%" height="280" style="border:0;display:block"
-        loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-        title="Where to stay"></iframe>
-    </div>
-  </div>
-</section>
 
 <!-- ── CATEGORIES ────────────────────────────────────────────── -->
 <section class="section">
