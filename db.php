@@ -1,21 +1,32 @@
 <?php
 // ============================================================
 //  db.php — Database + Security + Session Helpers
-//  StayNest Booking Management System
+//  Rusty's Rest and Lodging
+//
+//  Works on Railway (reads env vars set in Railway dashboard)
+//  AND falls back to XAMPP defaults for local development.
 // ============================================================
 
-define('DB_HOST', getenv('DB_HOST'));
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_NAME', getenv('DB_NAME'));
-define('DB_USER', getenv('DB_USER'));
-define('DB_PASS', getenv('DB_PASSWORD'));
+// ── Database credentials ──────────────────────────────────────
+// Railway injects MYSQLHOST, MYSQLPORT, MYSQLDATABASE,
+// MYSQLUSER, MYSQLPASSWORD automatically when you add a
+// MySQL service and link it to your app.
+// For local XAMPP, the getenv() calls return false/empty,
+// so we fall back to 'localhost', 'root', '', etc.
+
+define('DB_HOST',    getenv('MYSQLHOST')     ?: 'localhost');
+define('DB_PORT',    getenv('MYSQLPORT')     ?: '3306');
+define('DB_NAME',    getenv('MYSQLDATABASE') ?: 'rustys_rest_db');
+define('DB_USER',    getenv('MYSQLUSER')     ?: 'root');
+define('DB_PASS',    getenv('MYSQLPASSWORD') ?: '');
 define('DB_CHARSET', 'utf8mb4');
 
 // ── PDO Singleton ─────────────────────────────────────────────
 function getDB(): PDO {
     static $pdo = null;
     if ($pdo === null) {
-        $dsn = "mysql:host=".DB_HOST.";port=".DB_PORT.";dbname=".DB_NAME.";charset=".DB_CHARSET;
+        $dsn = "mysql:host=".DB_HOST.";port=".DB_PORT
+              .";dbname=".DB_NAME.";charset=".DB_CHARSET;
         try {
             $pdo = new PDO($dsn, DB_USER, DB_PASS, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -23,7 +34,8 @@ function getDB(): PDO {
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
         } catch (PDOException $e) {
-            jsonResponse(false, 'Database connection failed.', [], 500);
+            // Return a clean JSON error (never expose raw PDO message in prod)
+            jsonResponse(false, 'Database connection failed. Please try again later.', [], 500);
         }
     }
     return $pdo;
@@ -35,9 +47,9 @@ function startSession(): void {
         session_set_cookie_params([
             'lifetime' => 0,
             'path'     => '/',
-            'secure'   => false,    // set true on HTTPS
-            'httponly' => true,     // block JS from reading session cookie
-            'samesite' => 'Strict'  // CSRF mitigation at cookie level
+            'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+            'httponly' => true,
+            'samesite' => 'Strict',
         ]);
         session_start();
     }
@@ -83,7 +95,6 @@ function csrfToken(): string {
     return $_SESSION['csrf_token'];
 }
 
-// Validate token from POST field OR X-CSRF-Token AJAX header
 function verifyCsrf(): void {
     startSession();
     $token = $_POST['csrf_token'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
@@ -92,12 +103,10 @@ function verifyCsrf(): void {
     }
 }
 
-// Embeds the token in a hidden form field
 function csrfField(): string {
     return '<input type="hidden" name="csrf_token" value="' . csrfToken() . '">';
 }
 
-// Embeds the token in a <meta> tag for jQuery AJAX
 function csrfMeta(): string {
     return '<meta name="csrf-token" content="' . csrfToken() . '">';
 }
