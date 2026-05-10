@@ -90,7 +90,7 @@ switch ($action) {
     case 'bookings':
     case 'my_bookings':
         try {
-            $stmt = $db->prepare("SELECT b.*, l.title, l.city, l.cover_photo, l.price_per_night,
+            $stmt = $db->prepare("SELECT b.*, DATEDIFF(b.check_out, b.check_in) AS nights, l.title AS listing_title, l.city, l.cover_photo, l.price_per_night,
                        CONCAT(u.first_name,' ',u.last_name) AS host_name
                 FROM bookings b
                 JOIN listings l ON l.id = b.listing_id
